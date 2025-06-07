@@ -71,13 +71,12 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
+from PIL import Image
+
 banner = Image.open("baner.png")
-st.markdown(
-    """<div class="banner-container"><img src="data:image/png;base64,{}"/></div>""".format(
-        banner._repr_png_().decode("utf-8")
-    ),
-    unsafe_allow_html=True
-)
+st.markdown('<div class="banner-container">', unsafe_allow_html=True)
+st.image(banner, use_container_width=True)
+st.markdown('</div>', unsafe_allow_html=True)
 
 st.markdown("""
 **Con el objetivo de fortalecer la seguridad en nuestro entorno comercial, nos enfocamos en abordar las principales preocupaciones de seguridad.**
