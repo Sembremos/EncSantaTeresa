@@ -40,9 +40,8 @@ FIX_MOTIVOS =[
 motivos = []
 if seguridad in ["Inseguro(a)", "Muy inseguro(a)"]:
     motivos = st.multiselect(
-        "4.1 Indique motivo(s):",
-        ["Poca iluminación", "Presencia desconocidos", "Escasa presencia policial", "Robos", "Drogas", "Otro"]
-    )
+        "4.1 Indique motivo(s):", FIX_MOTIVOS)
+        
     if "Otro" in motivos:
         otro = st.text_input("Especifique otro motivo")
         motivos.append(f"Otro: {otro}")
