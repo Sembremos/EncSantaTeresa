@@ -11,7 +11,7 @@ client = gspread.authorize(creds)
 sheet = client.open_by_key("1xmQOqnUJUHhLEcBSDAbZX3wNGYmSe34ec8RWaxAUI10").sheet1
 
 # 2) Título
-st.title("Encuesta de Seguridad – Santa Teresa")
+st.title("Encuesta de Seguridad – Santa JUANA LA PERUANA")
 
 # 3) Formulario
 with st.form("encuesta"):
