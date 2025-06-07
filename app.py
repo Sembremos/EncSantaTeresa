@@ -37,14 +37,27 @@ FIX_MOTIVOS =[
     "Otro"
 ]
 
-motivos = []
-if seguridad in ["Inseguro(a)", "Muy inseguro(a)"]:
-    motivos = st.multiselect(
-        "4.1 Indique motivo(s):", FIX_MOTIVOS)
-        
-    if "Otro" in motivos:
-        otro = st.text_input("Especifique otro motivo")
+# Motivos
+motivos = st.multiselect("4.1 Indique motivo(s):", FIXED_MOTIVOS)
+
+# Si “Otro” está en la selección, pedimos el texto
+if "Otro" in motivos:
+    otro = st.text_input("Especifique otro motivo")
+    if otro:
         motivos.append(f"Otro: {otro}")
+
+ordered_motivos = [m for m in FIXED_MOTIVOS if m in motivos]
+
+# Y si “Otro: …” fue añadido, añadirlo al final:
+otros = [m for m in motivos if m.startswith("Otro: ")]
+if otros:
+    ordered_motivos += otros
+
+fila = [
+    # … tus otros campos …,
+    ";".join(ordered_motivos)
+]
+sheet.append_row(fila)
 
 # … aquí repites la lógica para preguntas 5–20 …
 
