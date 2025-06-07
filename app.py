@@ -150,7 +150,7 @@ with st.expander("", expanded=False):
         "Falta de oportunidades laborales","Problemas vecinales","Asentamientos ilegales (Conocido como precarios)",
         "Personas en situación de calle","Zona de prostitución","Consumo de alcohol en vía pública",
         "Personas con exceso de tiempo de ocio","Cuarterías","Lotes baldíos","Ventas informales",
-        "Pérdida de espacios públicos","Falta de inversión social","Consumo de drogas","Búnker","Otro"
+        "Pérdida de espacios públicos","Falta de inversión social","Consumo de drogas","Búnker","Otro"])
 
 # === PARTE 6: SITUACIONES RELACIONADAS A DELITOS ===
 st.markdown("<div class='expander-title'>Situaciones Relacionadas a Delitos</div>", unsafe_allow_html=True)
