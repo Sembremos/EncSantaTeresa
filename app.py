@@ -28,6 +28,15 @@ seguridad = st.radio(
     ["Muy seguro(a)", "Seguro(a)", "Ni seguro(a)/Ni inseguro(a)", "Inseguro(a)", "Muy inseguro(a)"]
 )
 
+FIX_MOTIVOS =[
+    "Poca iluminación",
+    "Presencia desconocidos",
+    "Escasa presencia policial",
+    "Robos",
+    "Drogas",
+    "Otro"
+]
+
 motivos = []
 if seguridad in ["Inseguro(a)", "Muy inseguro(a)"]:
     motivos = st.multiselect(
