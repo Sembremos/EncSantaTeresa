@@ -173,7 +173,7 @@ with st.expander("", expanded=False):
 st.markdown("<div class='expander-title'>Situaciones Relacionadas a Delitos</div>", unsafe_allow_html=True)
 with st.expander("", expanded=False):
     delitos_zona = st.multiselect(
-        "¿Seleccine los delitos que considere que ocurren en la zona?", [
+        "¿Seleccione los delitos que considere que ocurren en la zona?", [
             "Disturbios en vía pública","Daños a la propiedad","Intimidación o amenazas con fines de lucro","Estafas",
             "Hurto(Sustracción de artículos mediante el descuido)","Receptación","Contrabando","Venta de droga"
         ]
