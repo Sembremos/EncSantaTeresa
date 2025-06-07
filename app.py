@@ -15,10 +15,10 @@ st.title("Encuesta de Seguridad – Santa Teresa")
 
 # 3) Formulario
 with st.form("encuesta"):
-    barrio = st.text_input("1. ¿En qué barrio vive?")
+    barrio = st.text_input("1. Barrio")
     edad = st.number_input("2. Edad", min_value=0, max_value=120, step=1)
     sexo = st.radio("3. Sexo", ["Hombre","Mujer","LGBTQ+","Prefiero no decirlo"])
-    seguridad = st.select_slider(
+    seguridad = st.radio(
         "4. ¿Qué tan seguro(a) se siente?",
         ["Muy seguro(a)","Seguro(a)","Ni seguro(a)/Ni inseguro(a)","Inseguro(a)","Muy inseguro(a)"]
     )
