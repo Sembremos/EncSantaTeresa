@@ -108,7 +108,7 @@ with st.expander("", expanded=False):
     ])
 
 st.markdown("### Seleccione su ubicación en el mapa:")
-mapa = folium.Map(location=[10.3, -85.8], zoom_start=13)
+mapa = folium.Map(location=[9.6425, -85.1490], zoom_start=14)
 if st.session_state.ubicacion:
     folium.Marker(
         location=st.session_state.ubicacion,
