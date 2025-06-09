@@ -29,13 +29,27 @@ if len(raw) <= 1:
 else:
     header = raw[0]
     data = raw[1:]
+
+    # Eliminar encabezados duplicados añadiendo sufijo numérico
+    deduped = []
+    counts = {}
+    for col in header:
+        if col in counts:
+            counts[col] += 1
+            deduped.append(f"{col}_{counts[col]}")
+        else:
+            counts[col] = 0
+            deduped.append(col)
+    header = deduped
+
+    # Crear DataFrame con columnas únicas
     df = pd.DataFrame(data, columns=header)
 
     # Métrica: total de encuestas
     total = len(df)
     st.metric("Total de encuestas recibidas", total)
 
-    # Intentar convertir primera columna a datetime
+    # Intentar convertir la primera columna a datetime
     ts_col = header[0]
     try:
         df[ts_col] = pd.to_datetime(df[ts_col], errors='coerce')
@@ -69,3 +83,4 @@ st.markdown(
     "<p style='text-align:center; color:#88E145; font-size:10px'>Sembremos Seguridad – 2025</p>",
     unsafe_allow_html=True
 )
+
