@@ -249,7 +249,6 @@ if not st.session_state.enviado:
             datos = [
                 datetime.now().isoformat(),
                 distrito, barrio, edad, sexo, escolaridad, tipo_local,
-                ubic_url,
                 percepcion_seguridad,
                 ", ".join(ordered_factores),
                 ", ".join(ordered_factores_sociales),
