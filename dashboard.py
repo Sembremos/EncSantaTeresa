@@ -25,7 +25,6 @@ sheet = client.open_by_key(
 try:
     records = sheet.get_all_records()
 except Exception:
-    # Fallback: leer valores y manualmente construir registros
     raw = sheet.get_all_values()
     if len(raw) > 1:
         header = raw[0]
@@ -46,7 +45,7 @@ else:
     st.metric("Total de encuestas recibidas", total)
 
     # Asumir que la primera columna es timestamp
-ts_col = df.columns[0]
+    ts_col = df.columns[0]
     df[ts_col] = pd.to_datetime(df[ts_col], errors='coerce')
     df['date'] = df[ts_col].dt.date
 
@@ -74,3 +73,4 @@ st.markdown(
     "<p style='text-align:center; color:#88E145; font-size:10px'>Sembremos Seguridad – 2025</p>",
     unsafe_allow_html=True
 )
+
