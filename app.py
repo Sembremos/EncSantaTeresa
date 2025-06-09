@@ -1,17 +1,11 @@
 import streamlit as st
 import pandas as pd
 from datetime import datetime
-import folium
-from streamlit_folium import st_folium
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 from PIL import Image
 
 # === PARTE 0: CONFIGURACIÓN INICIAL Y SESIÓN ===
-if "ubicacion" not in st.session_state:
-    st.session_state.ubicacion = None
-if "enviado" not in st.session_state:
-    st.session_state.enviado = False
 
 # Valores por defecto para variables de preguntas retiradas
 escolaridad = ""
@@ -253,7 +247,6 @@ if not st.session_state.enviado:
             datos = [
                 datetime.now().isoformat(),
                 distrito, barrio, edad, sexo, escolaridad, tipo_local,
-                ubic_url,
                 percepcion_seguridad,
                 ", ".join(ordered_factores),
                 ", ".join(ordered_factores_sociales),
