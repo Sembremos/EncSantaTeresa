@@ -183,7 +183,7 @@ with st.expander("", expanded=False):
     ordered_robos = [f for f in FIXED_ROBOS if f in robos_sel]
 
 # === PARTE 7: INFORMACIÓN ADICIONAL Y VICTIMIZACIÓN ===
-st.markdown("<div class='expander-title'>Información Adicional</div>", unsafe_allow_html=True)
+st.markdown("<div class='expander-title'>Victimización e Información Adicional</div>", unsafe_allow_html=True)
 with st.expander("", expanded=False):
     victima = st.radio(
         "¿Usted ha sido víctima de algún delito en los últimos 12 meses?",[
