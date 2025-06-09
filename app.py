@@ -110,6 +110,20 @@ with st.expander("", expanded=False):
     edad = st.number_input("Edad:", min_value=12, max_value=120, format="%d")
     sexo = st.selectbox("Sexo:", ["","Hombre","Mujer","LGBTQ+","Otro / Prefiero No decirlo"])
 
+st.markdown("### Seleccione su ubicación en el mapa:")
+mapa = folium.Map(location=[9.6425, -85.1490], zoom_start=14)
+if st.session_state.ubicacion:
+    folium.Marker(
+        location=st.session_state.ubicacion,
+        tooltip="Ubicación seleccionada",
+        icon=folium.Icon(color="blue", icon="map-marker")
+    ).add_to(mapa)
+map_click = st_folium(mapa, width=700, height=500)
+if map_click and map_click.get("last_clicked"):
+    st.session_state.ubicacion = [
+        map_click["last_clicked"]["lat"],
+        map_click["last_clicked"]["lng"]
+    ]
 
 # === PARTE 4: PERCEPCIÓN DE SEGURIDAD ===
 st.markdown("<div class='expander-title'>Percepción de Seguridad</div>", unsafe_allow_html=True)
@@ -119,7 +133,7 @@ with st.expander("", expanded=False):
         ["Muy seguro(a)","Seguro(a)","Ni seguro(a) Ni inseguro(a)","Inseguro(a)","Muy inseguro(a)"]
     )
     st.caption("Nota: respuesta de selección única.")
-
+    # Orden fijo para inseguridad
     FIXED_FACTORES = [
         "Presencia de personas desconocidas o comportamientos inusuales",
         "Poca iluminación en la zona",
@@ -130,56 +144,61 @@ with st.expander("", expanded=False):
         "Disturbios o riñas cercanas",
         "Otro"
     ]
+    factores_inseguridad = []
     ordered_factores = []
     if percepcion_seguridad in ["Inseguro(a)", "Muy inseguro(a)"]:
-        seleccion = st.multiselect("¿Por qué se siente inseguro(a)?", FIXED_FACTORES)
-        if "Otro" in seleccion:
-            otro_text = st.text_input("Especifique otro motivo", key="otro_inseguridad")
-            if otro_text:
-                seleccion.append(f"Otro: {otro_text}")
-        ordered_factores = [f for f in FIXED_FACTORES if f in seleccion]
-        otros_extra = [f for f in seleccion if f.startswith("Otro:")]
-        if otros_extra:
-            ordered_factores += otros_extra
+        factores_inseguridad = st.multiselect("¿Por qué se siente inseguro(a)?", FIXED_FACTORES)
+        if "Otro" in factores_inseguridad:
+            otro_desc = st.text_input("Otro (describa)")
+            if otro_desc:
+                factores_inseguridad.append(f"Otro: {otro_desc}")
+        ordered_factores = [f for f in FIXED_FACTORES if f in factores_inseguridad]
+        extras = [f for f in factores_inseguridad if f.startswith("Otro:")]
+        if extras:
+            ordered_factores += extras
 
 # === PARTE 5: FACTORES DE RIESGO SOCIAL ===
 st.markdown("<div class='expander-title'>Factores de Riesgo Social</div>", unsafe_allow_html=True)
 with st.expander("", expanded=False):
-    factores_sociales = st.multiselect(
-        "¿Cuáles de los siguientes factores afectan la seguridad en su zona comercial?", [
-            "Falta de oportunidades laborales","Problemas vecinales","Asentamientos ilegales",
-            "Personas en situación de calle","Zona de prostitución","Consumo de alcohol en vía pública",
-            "Personas con exceso de tiempo de ocio","Cuarterías","Lotes baldíos","Ventas informales",
-            "Pérdida de espacios públicos","Otro"
-        ]
+    FIXED_SOCIALES = [
+        "Falta de oportunidades laborales","Problemas vecinales","Asentamientos ilegales",
+        "Personas en situación de calle","Zona de prostitución","Consumo de alcohol en vía pública",
+        "Personas con exceso de tiempo de ocio","Cuarterías","Lotes baldíos","Ventas informales",
+        "Pérdida de espacios públicos","Otro"
+    ]
+    factores_sociales_sel = st.multiselect(
+        "¿Cuáles de los siguientes factores afectan la seguridad en su zona comercial?", FIXED_SOCIALES
     )
-    # Las demás variables ya tienen valores por defecto si no se completan
+    ordered_factores_sociales = [f for f in FIXED_SOCIALES if f in factores_sociales_sel]
+    extras_soc = [f for f in factores_sociales_sel if f == "Otro"]
+    if extras_soc:
+        ordered_factores_sociales += extras_soc
 
 # === PARTE 6: SITUACIONES RELACIONADAS A DELITOS ===
 st.markdown("<div class='expander-title'>Situaciones Relacionadas a Delitos</div>", unsafe_allow_html=True)
 with st.expander("", expanded=False):
-    delitos_zona = st.multiselect(
-        "¿Seleccione los delitos que considere que ocurren en la zona?", [
-            "Disturbios en vía pública","Daños a la propiedad","Intimidación o amenazas con fines de lucro","Estafas",
-            "Hurto(Sustracción de artículos mediante el descuido)","Receptación","Contrabando","Venta de droga"
-        ]
-    )
-    delitos_sexuales = st.multiselect(
-        "¿Qué delitos sexuales ha percibido que existen en la zona?", [
-            "Abuso sexual","Acoso sexual","Violación"
-        ]
-    )
-    asaltos = st.multiselect(
-        "¿Qué tipos de asaltos hay en la zona?", [
-            "Asalto a personas","Asalto a comercio","Asalto a vivienda","Asalto a transporte público"
-        ]
-    )
-    robos = st.multiselect(
-        "¿Qué tipos de robos ha identificado?", [
-            "Tacha a comercio","Tacha a edificaciones","Tacha a vivienda",
-            "Tacha de vehículos","Robo de vehículos"
-        ]
-    )
+    FIXED_DELITOS = [
+        "Disturbios en vía pública","Daños a la propiedad","Intimidación o amenazas con fines de lucro",
+        "Estafas","Hurto(Sustracción de artículos mediante el descuido)","Receptación","Contrabando","Venta de droga"
+    ]
+    delitos_zona_sel = st.multiselect("¿Seleccione los delitos que considere que ocurren en la zona?", FIXED_DELITOS)
+    ordered_delitos_zona = [f for f in FIXED_DELITOS if f in delitos_zona_sel]
+
+    FIXED_SEXUALES = ["Abuso sexual","Acoso sexual","Violación"]
+    delitos_sexuales_sel = st.multiselect("¿Qué delitos sexuales ha percibido que existen en la zona?", FIXED_SEXUALES)
+    ordered_delitos_sexuales = [f for f in FIXED_SEXUALES if f in delitos_sexuales_sel]
+
+    FIXED_ASALTOS = [
+        "Asalto a personas","Asalto a comercio","Asalto a vivienda","Asalto a transporte público"
+    ]
+    asaltos_sel = st.multiselect("¿Qué tipos de asaltos hay en la zona?", FIXED_ASALTOS)
+    ordered_asaltos = [f for f in FIXED_ASALTOS if f in asaltos_sel]
+
+    FIXED_ROBOS = [
+        "Tacha a comercio","Tacha a edificaciones","Tacha a vivienda","Tacha de vehículos","Robo de vehículos"
+    ]
+    robos_sel = st.multiselect("¿Qué tipos de robos ha identificado?", FIXED_ROBOS)
+    ordered_robos = [f for f in FIXED_ROBOS if f in robos_sel]
 
 # === PARTE 7: INFORMACIÓN ADICIONAL Y VICTIMIZACIÓN ===
 st.markdown("<div class='expander-title'>Información Adicional</div>", unsafe_allow_html=True)
@@ -189,43 +208,40 @@ with st.expander("", expanded=False):
             "Sí, y presenté la denuncia","Sí, pero no presenté la denuncia","No","Prefiero no responder"
         ]
     )
-    motivo_no_denuncia = []
-    tipo_delito = []
+    FIXED_NO_DENUNCIA = [
+        "Distancia","Miedo a represalias","Falta de respuesta","Experiencias previas fallidas",
+        "Complejidad al denunciar","Desconocimiento de dónde denunciar","Consejo policial","Falta de tiempo"
+    ]
+    motivo_no_denuncia_sel = []
+    tipo_delito_sel = []
     horario_delito = ""
-    modo_operar = []
+    modo_operar_sel = []
     if victima == "Sí, pero no presenté la denuncia":
-        motivo_no_denuncia = st.multiselect(
-            "¿Por qué no denunció?", [
-                "Distancia","Miedo a represalias","Falta de respuesta","Experiencias previas fallidas",
-                "Complejidad al denunciar","Desconocimiento de dónde denunciar","Consejo policial","Falta de tiempo"
-            ]
-        )
-    elif victima in ["Sí, y presenté la denuncia","Sí, pero no presenté la denuncia"]:
-        tipo_delito = st.multiselect(
-            "¿Cuál fue el delito?", [
-                "Hurto","Asalto","Cobro por protección","Estafa","Daños a la propiedad",
-                "Venta o consumo de drogas","Amenazas","Cobros periódicos","Otro"
-            ]
-        )
+        motivo_no_denuncia_sel = st.multiselect("¿Por qué no denunció?", FIXED_NO_DENUNCIA)
     if victima in ["Sí, y presenté la denuncia","Sí, pero no presenté la denuncia"]:
+        FIXED_TIPO = [
+            "Hurto","Asalto","Cobro por protección","Estafa","Daños a la propiedad",
+            "Venta o consumo de drogas","Amenazas","Cobros periódicos","Otro"
+        ]
+        tipo_delito_sel = st.multiselect("¿Cuál fue el delito?", FIXED_TIPO)
         horario_delito = st.selectbox(
             "¿Conoce el horario en el que ocurrió el hecho?", [
                 "","00:00-02:59","03:00-05:59","06:00-08:59","09:00-11:59",
                 "12:00-14:59","15:00-17:59","18:00-20:59","21:00-23:59","Desconocido"
             ]
         )
-        modo_operar = st.multiselect(
-            "¿Cómo operaban los responsables?", [
-                "Arma blanca","Arma de fuego","Amenazas","Cobros/cuotas","Arrebato",
-                "Boquete","Ganzúa","Engaño","No sé","Otro"
-            ]
-        )
-    opinion_fp = st.radio("¿Cómo califica el servicio policial?", ["Excelente","Bueno","Regular","Mala","Muy mala"]);
-    cambio_servicio = st.radio("¿Ha cambiado el servicio en 12 meses?", ["Ha mejorado mucho","Ha mejorado","Igual","Ha empeorado","Ha empeorado mucho"]);
-    conocimiento_policias = st.radio("¿Conoce policías que patrullan su zona?", ["Sí","No"]);
+        FIXED_MODO = [
+            "Arma blanca","Arma de fuego","Amenazas","Cobros/cuotas","Arrebato",
+            "Boquete","Ganzúa","Engaño","No sé","Otro"
+        ]
+        modo_operar_sel = st.multiselect("¿Cómo operaban los responsables?", FIXED_MODO)
+
+    opinion_fp = st.radio("¿Cómo califica el servicio policial?", ["Excelente","Bueno","Regular","Mala","Muy mala"])
+    cambio_servicio = st.radio("¿Ha cambiado el servicio en 12 meses?", ["Ha mejorado mucho","Ha mejorado","Igual","Ha empeorado","Ha empeorado mucho"])
+    conocimiento_policias = st.radio("¿Conoce policías que patrullan su zona?", ["Sí","No"])
     participacion_programa = st.radio("¿Conoce/participa en Programa de Seguridad Comercial?", [
         "No lo conozco","Lo conozco, pero no participo","Lo conozco y participo","Me gustaría participar","Prefiero no responder"
-    ]);
+    ])
     deseo_participar = ""
     if participacion_programa in ["No lo conozco","Lo conozco, pero no participo","Me gustaría participar"]:
         deseo_participar = st.text_area("Si desea contactar, indique nombre, correo y teléfono:")
@@ -246,7 +262,6 @@ if not st.session_state.enviado:
         if not cambio_servicio:        errores.append("Cambio de servicio")
         if not conocimiento_policias:  errores.append("Conocimiento de policías")
         if not participacion_programa: errores.append("Participación en programa")
-
         if errores:
             st.error("⚠️ Faltan campos obligatorios: " + ", ".join(errores))
         else:
@@ -258,26 +273,16 @@ if not st.session_state.enviado:
                 ubic_url,
                 percepcion_seguridad,
                 ", ".join(ordered_factores),
-                ", ".join(factores_sociales),
-                ", ".join(falta_de_inversion),
-                ", ".join(consumo_drogas),
-                ", ".join(bunker),
-                ", ".join(delitos_zona),
-                ", ".join(venta_drogas),
-                ", ".join(delitos_vida),
-                ", ".join(delitos_sexuales),
-                ", ".join(asaltos),
-                ", ".join(estafas),
-                ", ".join(robos),
-                observacion_control,
-                ", ".join(descripcion_control),
+                ", ".join(ordered_factores_sociales),
+                ", ".join(ordered_delitos_zona),
+                ", ".join(ordered_delitos_sexuales),
+                ", ".join(ordered_asaltos),
+                ", ".join(ordered_robos),
                 victima,
-                ", ".join(motivo_no_denuncia),
-                ", ".join(tipo_delito),
+                ", ".join(motivo_no_denuncia_sel),
+                ", ".join(tipo_delito_sel),
                 horario_delito,
-                ", ".join(modo_operar),
-                exigencia_cuota,
-                descripcion_cuota,
+                ", ".join(modo_operar_sel),
                 opinion_fp,
                 cambio_servicio,
                 conocimiento_policias,
@@ -304,4 +309,3 @@ else:
 st.markdown(
     "<p style='text-align:center;color:#88E145;font-size:10px'>Sembremos Seguridad - 2025</p>",
     unsafe_allow_html=True
-)
