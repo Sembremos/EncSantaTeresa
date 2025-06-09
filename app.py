@@ -1,11 +1,17 @@
 import streamlit as st
 import pandas as pd
 from datetime import datetime
+import folium
+from streamlit_folium import st_folium
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 from PIL import Image
 
 # === PARTE 0: CONFIGURACIÓN INICIAL Y SESIÓN ===
+if "ubicacion" not in st.session_state:
+    st.session_state.ubicacion = None
+if "enviado" not in st.session_state:
+    st.session_state.enviado = False
 
 # Valores por defecto para variables de preguntas retiradas
 escolaridad = ""
@@ -104,6 +110,20 @@ with st.expander("", expanded=False):
     edad = st.number_input("Edad:", min_value=12, max_value=120, format="%d")
     sexo = st.selectbox("Sexo:", ["","Hombre","Mujer","LGBTQ+","Otro / Prefiero No decirlo"])
 
+st.markdown("### Seleccione su ubicación en el mapa:")
+mapa = folium.Map(location=[9.6425, -85.1490], zoom_start=14)
+if st.session_state.ubicacion:
+    folium.Marker(
+        location=st.session_state.ubicacion,
+        tooltip="Ubicación seleccionada",
+        icon=folium.Icon(color="blue", icon="map-marker")
+    ).add_to(mapa)
+map_click = st_folium(mapa, width=700, height=500)
+if map_click and map_click.get("last_clicked"):
+    st.session_state.ubicacion = [
+        map_click["last_clicked"]["lat"],
+        map_click["last_clicked"]["lng"]
+    ]
 
 # === PARTE 4: PERCEPCIÓN DE SEGURIDAD ===
 st.markdown("<div class='expander-title'>Percepción de Seguridad</div>", unsafe_allow_html=True)
@@ -233,6 +253,7 @@ with st.expander("", expanded=False):
 if not st.session_state.enviado:
     if st.button("Enviar formulario"):
         errores = []
+        if not st.session_state.ubicacion: errores.append("Ubicación en mapa")
         if not distrito:               errores.append("Distrito")
         if not sexo:                   errores.append("Sexo")
         if not percepcion_seguridad:   errores.append("Percepción de seguridad")
@@ -244,9 +265,12 @@ if not st.session_state.enviado:
         if errores:
             st.error("⚠️ Faltan campos obligatorios: " + ", ".join(errores))
         else:
+            lat, lon = st.session_state.ubicacion
+            ubic_url = f"https://www.google.com/maps?q={lat},{lon}"
             datos = [
                 datetime.now().isoformat(),
                 distrito, barrio, edad, sexo, escolaridad, tipo_local,
+                ubic_url,
                 percepcion_seguridad,
                 ", ".join(ordered_factores),
                 ", ".join(ordered_factores_sociales),
