@@ -21,10 +21,23 @@ sheet = client.open_by_key(
     "1xmQOqnUJUHhLEcBSDAbZX3wNGYmSe34ec8RWaxAUI10"
 ).sheet1
 
-# --- Carga de datos ---
-records = sheet.get_all_records()
+# --- Carga de datos con fallback ---
+try:
+    records = sheet.get_all_records()
+except Exception:
+    # Fallback: leer valores y manualmente construir registros
+    raw = sheet.get_all_values()
+    if len(raw) > 1:
+        header = raw[0]
+        data_rows = raw[1:]
+        records = [dict(zip(header, row)) for row in data_rows]
+    else:
+        records = []
+
+# Convertir a DataFrame
 df = pd.DataFrame.from_records(records)
 
+# Mostrar alerta si no hay datos
 if df.empty:
     st.warning("No hay datos de encuestas para mostrar aún.")
 else:
@@ -32,10 +45,10 @@ else:
     total = len(df)
     st.metric("Total de encuestas recibidas", total)
 
-    # Asegurar que la primera columna es datetime
-    ts_col = df.columns[0]
-    df[ts_col] = pd.to_datetime(df[ts_col])
-    df["date"] = df[ts_col].dt.date
+    # Asumir que la primera columna es timestamp
+ts_col = df.columns[0]
+    df[ts_col] = pd.to_datetime(df[ts_col], errors='coerce')
+    df['date'] = df[ts_col].dt.date
 
     # Gráfica: encuestas por día
     st.subheader("Encuestas por día")
@@ -44,7 +57,6 @@ else:
 
     # Distribución de percepción de seguridad
     st.subheader("Distribución de percepción de seguridad")
-    # Busca columna que contenga 'seguridad'
     seguridad_cols = [c for c in df.columns if 'seguridad' in c.lower()]
     if seguridad_cols:
         col = seguridad_cols[0]
