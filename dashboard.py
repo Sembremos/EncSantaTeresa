@@ -5,11 +5,11 @@ from oauth2client.service_account import ServiceAccountCredentials
 from datetime import datetime
 
 # Configuración de la página
-title = "📊 Dashboard de Encuestas – Santa Teresa"
-st.set_page_config(page_title=title, layout="wide")
-st.title(title)
+TITLE = "📊 Dashboard de Encuestas – Santa Teresa"
+st.set_page_config(page_title=TITLE, layout="wide")
+st.title(TITLE)
 
-# --- Conexión a Google Sheets ---
+# === Conexión a Google Sheets ===
 scope = [
     "https://spreadsheets.google.com/feeds",
     "https://www.googleapis.com/auth/drive"
@@ -22,7 +22,7 @@ sheet = client.open_by_key(
     "1xmQOqnUJUHhLEcBSDAbZX3wNGYmSe34ec8RWaxAUI10"
 ).sheet1
 
-# --- Lectura de datos ---
+# === Lectura de datos ===
 raw = sheet.get_all_values()
 if len(raw) <= 1:
     st.warning("No hay datos de encuestas para mostrar aún.")
@@ -57,15 +57,14 @@ else:
     except Exception:
         df['date'] = None
 
-# --- Encuestas por Barrio (columna C) ---
-st.subheader("Encuestas por Barrio")
-serie_barrio = df.iloc[:, 2]  
-counts_barrio = serie_barrio.dropna().value_counts()
+    # Gráfica: encuestas por día
+    st.subheader("Encuestas por día")
+    if 'date' in df.columns and df['date'].notna().any():
+        daily = df.groupby('date').size()
+        st.bar_chart(daily)
+    else:
+        st.info("No hay datos de fecha válidos para graficar")
 
-# Mostramos gráfico de barras
-st.bar_chart(counts_barrio)
-
-    
     # Distribución de percepción de seguridad
     st.subheader("Distribución de percepción de seguridad")
     seguridad_col = next((c for c in df.columns if 'seguridad' in c.lower()), None)
@@ -74,6 +73,12 @@ st.bar_chart(counts_barrio)
         st.bar_chart(freq)
     else:
         st.info("No se encontró columna de percepción de seguridad.")
+
+    # Encuestas por Barrio (columna C)
+    st.subheader("Encuestas por Barrio")
+    serie_barrio = df.iloc[:, 2]
+    counts_barrio = serie_barrio.dropna().value_counts()
+    st.bar_chart(counts_barrio)
 
     # Mostrar tabla de datos completa
     st.subheader("Detalle de todas las respuestas")
@@ -84,4 +89,3 @@ st.markdown(
     "<p style='text-align:center; color:#88E145; font-size:10px'>Sembremos Seguridad – 2025</p>",
     unsafe_allow_html=True
 )
-
