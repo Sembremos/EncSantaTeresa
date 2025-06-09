@@ -309,3 +309,4 @@ else:
 st.markdown(
     "<p style='text-align:center;color:#88E145;font-size:10px'>Sembremos Seguridad - 2025</p>",
     unsafe_allow_html=True
+)
