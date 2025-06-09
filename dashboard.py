@@ -5,8 +5,9 @@ from oauth2client.service_account import ServiceAccountCredentials
 from datetime import datetime
 
 # Configuración de la página
-st.set_page_config(page_title="Dashboard de Encuestas", layout="wide")
-st.title("📊 Dashboard de Encuestas – Santa Teresa")
+title = "📊 Dashboard de Encuestas – Santa Teresa"
+st.set_page_config(page_title=title, layout="wide")
+st.title(title)
 
 # --- Conexión a Google Sheets ---
 scope = [
@@ -21,45 +22,40 @@ sheet = client.open_by_key(
     "1xmQOqnUJUHhLEcBSDAbZX3wNGYmSe34ec8RWaxAUI10"
 ).sheet1
 
-# --- Carga de datos con fallback ---
-try:
-    records = sheet.get_all_records()
-except Exception:
-    raw = sheet.get_all_values()
-    if len(raw) > 1:
-        header = raw[0]
-        data_rows = raw[1:]
-        records = [dict(zip(header, row)) for row in data_rows]
-    else:
-        records = []
-
-# Convertir a DataFrame
-df = pd.DataFrame.from_records(records)
-
-# Mostrar alerta si no hay datos
-if df.empty:
+# --- Lectura de datos ---
+raw = sheet.get_all_values()
+if len(raw) <= 1:
     st.warning("No hay datos de encuestas para mostrar aún.")
 else:
+    header = raw[0]
+    data = raw[1:]
+    df = pd.DataFrame(data, columns=header)
+
     # Métrica: total de encuestas
     total = len(df)
     st.metric("Total de encuestas recibidas", total)
 
-    # Asumir que la primera columna es timestamp
-    ts_col = df.columns[0]
-    df[ts_col] = pd.to_datetime(df[ts_col], errors='coerce')
-    df['date'] = df[ts_col].dt.date
+    # Intentar convertir primera columna a datetime
+    ts_col = header[0]
+    try:
+        df[ts_col] = pd.to_datetime(df[ts_col], errors='coerce')
+        df['date'] = df[ts_col].dt.date
+    except Exception:
+        df['date'] = None
 
     # Gráfica: encuestas por día
     st.subheader("Encuestas por día")
-    daily = df.groupby("date").size()
-    st.bar_chart(daily)
+    if 'date' in df.columns and df['date'].notna().any():
+        daily = df.groupby('date').size()
+        st.bar_chart(daily)
+    else:
+        st.info("No hay datos de fecha válidos para graficar")
 
     # Distribución de percepción de seguridad
     st.subheader("Distribución de percepción de seguridad")
-    seguridad_cols = [c for c in df.columns if 'seguridad' in c.lower()]
-    if seguridad_cols:
-        col = seguridad_cols[0]
-        freq = df[col].value_counts()
+    seguridad_col = next((c for c in df.columns if 'seguridad' in c.lower()), None)
+    if seguridad_col:
+        freq = df[seguridad_col].value_counts()
         st.bar_chart(freq)
     else:
         st.info("No se encontró columna de percepción de seguridad.")
@@ -73,4 +69,3 @@ st.markdown(
     "<p style='text-align:center; color:#88E145; font-size:10px'>Sembremos Seguridad – 2025</p>",
     unsafe_allow_html=True
 )
-
