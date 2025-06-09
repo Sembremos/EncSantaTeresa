@@ -57,14 +57,15 @@ else:
     except Exception:
         df['date'] = None
 
-    # Gráfica: encuestas por día
-    st.subheader("Encuestas por día")
-    if 'date' in df.columns and df['date'].notna().any():
-        daily = df.groupby('date').size()
-        st.bar_chart(daily)
-    else:
-        st.info("No hay datos de fecha válidos para graficar")
+# --- Encuestas por Barrio (columna C) ---
+st.subheader("Encuestas por Barrio")
+serie_barrio = df.iloc[:, 2]  
+counts_barrio = serie_barrio.dropna().value_counts()
 
+# Mostramos gráfico de barras
+st.bar_chart(counts_barrio)
+
+    
     # Distribución de percepción de seguridad
     st.subheader("Distribución de percepción de seguridad")
     seguridad_col = next((c for c in df.columns if 'seguridad' in c.lower()), None)
