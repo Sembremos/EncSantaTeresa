@@ -250,8 +250,6 @@ if not st.session_state.enviado:
         if errores:
             st.error("⚠️ Faltan campos obligatorios: " + ", ".join(errores))
         else:
-            lat, lon = st.session_state.ubicacion
-            ubic_url = f"https://www.google.com/maps?q={lat},{lon}"
             datos = [
                 datetime.now().isoformat(),
                 distrito, barrio, edad, sexo, escolaridad, tipo_local,
