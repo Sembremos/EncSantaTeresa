@@ -239,7 +239,6 @@ with st.expander("", expanded=False):
 if not st.session_state.enviado:
     if st.button("Enviar formulario"):
         errores = []
-        if not st.session_state.ubicacion: errores.append("Ubicación en mapa")
         if not distrito:               errores.append("Distrito")
         if not sexo:                   errores.append("Sexo")
         if not percepcion_seguridad:   errores.append("Percepción de seguridad")
