@@ -96,7 +96,7 @@ La información que nos suministras es completamente confidencial y se emplea ex
 # === PARTE 3: DATOS DEMOGRÁFICOS Y MAPA ===
 st.markdown("<div class='expander-title'>Datos Demográficos</div>", unsafe_allow_html=True)
 with st.expander("", expanded=False):
-    distrito = st.selectbox("Distrito:", ["", "Santa Teresa"])
+    distrito = st.selectbox("Distrito:", ["", "Santa Teresa", "Carmen", "Manzanillo"])
     if distrito == "Santa Teresa":
         barrio = st.selectbox("Barrio", [
             "Playa Carmen", "Santa Teresa", "Malpaís", "Manzanillo Bello Horizonte"
@@ -106,7 +106,6 @@ with st.expander("", expanded=False):
     edad = st.number_input("Edad:", min_value=12, max_value=120, format="%d")
     sexo = st.selectbox("Sexo:", ["","Hombre","Mujer","LGBTQ+","Otro / Prefiero No decirlo"])
 
-
 # === PARTE 4: PERCEPCIÓN DE SEGURIDAD ===
 st.markdown("<div class='expander-title'>Percepción de Seguridad</div>", unsafe_allow_html=True)
 with st.expander("", expanded=False):
@@ -115,7 +114,6 @@ with st.expander("", expanded=False):
         ["Muy seguro(a)","Seguro(a)","Ni seguro(a) Ni inseguro(a)","Inseguro(a)","Muy inseguro(a)"]
     )
     st.caption("Nota: respuesta de selección única.")
-    # Orden fijo para inseguridad
     FIXED_FACTORES = [
         "Presencia de personas desconocidas o comportamientos inusuales",
         "Poca iluminación en la zona",
@@ -146,7 +144,7 @@ with st.expander("", expanded=False):
         "Falta de oportunidades laborales","Problemas vecinales","Asentamientos ilegales",
         "Personas en situación de calle","Zona de prostitución","Consumo de alcohol en vía pública",
         "Personas con exceso de tiempo de ocio","Cuarterías","Lotes baldíos","Ventas informales",
-        "Pérdida de espacios públicos","Otro"
+        "Pérdida de espacios públicos","Ausencia de transporte público (bus, taxi)","Otro"
     ]
     factores_sociales_sel = st.multiselect(
         "¿Cuáles de los siguientes factores afectan la seguridad en su zona comercial?", FIXED_SOCIALES
