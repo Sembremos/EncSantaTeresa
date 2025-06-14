@@ -159,12 +159,12 @@ st.markdown("<div class='expander-title'>Situaciones Relacionadas a Delitos</div
 with st.expander("", expanded=False):
     FIXED_DELITOS = [
         "Disturbios en vía pública","Daños a la propiedad","Intimidación o amenazas con fines de lucro",
-        "Estafas","Hurto(Sustracción de artículos mediante el descuido)","Receptación","Contrabando","Venta de droga","Violencia doméstica"
+        "Estafas","Hurto(Sustracción de artículos mediante el descuido)","Receptación","Contrabando","Venta de droga","Violencia doméstica","Homicidios","Heridos"
     ]
     delitos_zona_sel = st.multiselect("¿Seleccione los delitos que considere que ocurren en la zona?", FIXED_DELITOS)
     ordered_delitos_zona = [f for f in FIXED_DELITOS if f in delitos_zona_sel]
 
-    FIXED_SEXUALES = ["Abuso sexual","Acoso sexual","Violación"]
+    FIXED_SEXUALES = ["Abuso sexual","Acoso sexual","Violación","Acoso sexual callejero"]
     delitos_sexuales_sel = st.multiselect("¿Qué delitos sexuales ha percibido que existen en la zona?", FIXED_SEXUALES)
     ordered_delitos_sexuales = [f for f in FIXED_SEXUALES if f in delitos_sexuales_sel]
 
