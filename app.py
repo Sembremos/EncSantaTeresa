@@ -142,7 +142,7 @@ st.markdown("<div class='expander-title'>Factores de Riesgo Social</div>", unsaf
 with st.expander("", expanded=False):
     FIXED_SOCIALES = [
         "Falta de oportunidades laborales","Conflictos entre residentes locales y personas extranjeras(Turistas o trabajadores)","Problemas vecinales","Asentamientos ilegales",
-        "Personas en situación de calle","Zona de prostitución","Consumo de alcohol en vía pública",
+        "Personas en situación de calle","Zona de prostitución","Consumo de alcohol en vía pública","Consumo de drogas",
         "Personas con exceso de tiempo de ocio","Cuarterías","Lotes baldíos","Ventas informales",
         "Pérdida de espacios públicos","Ausencia de transporte público (bus, taxi)","Otro"
     ]
