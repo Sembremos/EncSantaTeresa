@@ -175,7 +175,7 @@ with st.expander("", expanded=False):
     ordered_asaltos = [f for f in FIXED_ASALTOS if f in asaltos_sel]
 
     FIXED_ROBOS = [
-        "Tacha a comercio","Tacha a edificaciones","Tacha a vivienda","Tacha de vehículos","Robo de vehículos"
+        "Robo a comercio","Robo a edificaciones","Robo a vivienda","Tacha de vehículos","Robo de vehículos"
     ]
     robos_sel = st.multiselect("¿Qué tipos de robos ha identificado?", FIXED_ROBOS)
     ordered_robos = [f for f in FIXED_ROBOS if f in robos_sel]
