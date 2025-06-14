@@ -141,8 +141,8 @@ with st.expander("", expanded=False):
 st.markdown("<div class='expander-title'>Factores de Riesgo Social</div>", unsafe_allow_html=True)
 with st.expander("", expanded=False):
     FIXED_SOCIALES = [
-        "Falta de oportunidades laborales","Conflictos entre residentes locales y personas extranjeras(Turistas o trabajadores)","Problemas vecinales","Asentamientos ilegales",
-        "Personas en situación de calle","Zona de prostitución","Consumo de alcohol en vía pública","Consumo de drogas",
+        "Falta de inversión social","Falta de oportunidades laborales","Conflictos entre residentes locales y personas extranjeras(Turistas o trabajadores)","Problemas vecinales","Asentamientos ilegales",
+        "Personas en situación de calle","Zona de prostitución","Consumo de alcohol en vía pública","Consumo de drogas","Búnker",
         "Personas con exceso de tiempo de ocio","Cuarterías","Lotes baldíos","Ventas informales",
         "Pérdida de espacios públicos","Ausencia de transporte público (bus, taxi)","Otro"
     ]
@@ -159,7 +159,7 @@ st.markdown("<div class='expander-title'>Situaciones Relacionadas a Delitos</div
 with st.expander("", expanded=False):
     FIXED_DELITOS = [
         "Disturbios en vía pública","Daños a la propiedad","Intimidación o amenazas con fines de lucro",
-        "Estafas","Hurto(Sustracción de artículos mediante el descuido)","Receptación","Contrabando","Venta de droga"
+        "Estafas","Hurto(Sustracción de artículos mediante el descuido)","Receptación","Contrabando","Venta de droga","Violencia domestica"
     ]
     delitos_zona_sel = st.multiselect("¿Seleccione los delitos que considere que ocurren en la zona?", FIXED_DELITOS)
     ordered_delitos_zona = [f for f in FIXED_DELITOS if f in delitos_zona_sel]
