@@ -96,7 +96,7 @@ La información que nos suministras es completamente confidencial y se emplea ex
 # === PARTE 3: DATOS DEMOGRÁFICOS Y MAPA ===
 st.markdown("<div class='expander-title'>Datos Demográficos</div>", unsafe_allow_html=True)
 with st.expander("", expanded=False):
-    distrito = st.selectbox("Distrito:", ["", "Santa Teresa", "Carmen", "Manzanillo"])
+    distrito = st.selectbox("Barrios:", ["", "Santa Teresa", "Carmen", "Manzanillo"])
     if distrito == "Santa Teresa":
         barrio = st.selectbox("Barrio", [
             "Playa Carmen", "Santa Teresa", "Malpaís", "Manzanillo Bello Horizonte"
