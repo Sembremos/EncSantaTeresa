@@ -45,22 +45,22 @@ else:
     # Crear DataFrame con columnas únicas
     df = pd.DataFrame(data, columns=header)
 
-  # Métrica personalizada: Total de encuestas recibidas (centrado y grande)
-total = len(df)
-st.markdown(f"""
-    <div style="text-align: center; margin-top: 50px;">
-        <h2 style="font-size: 28px;">Total de encuestas recibidas</h2>
-        <p style="font-size: 72px; font-weight: bold; color: #2E8B57;">{total}</p>
-    </div>
-""", unsafe_allow_html=True)
-
+    # Métrica personalizada: Total de encuestas recibidas (centrado y grande)
+    total = len(df)
+    st.markdown(f"""
+        <div style="text-align: center; margin-top: 50px;">
+            <h2 style="font-size: 28px;">Total de encuestas recibidas</h2>
+            <p style="font-size: 72px; font-weight: bold; color: #2E8B57;">{total}</p>
+        </div>
+    """, unsafe_allow_html=True)
 
     # Intentar convertir la primera columna a datetime
-ts_col = header[0]
+    ts_col = header[0]
     try:
         df[ts_col] = pd.to_datetime(df[ts_col], errors='coerce')
         df['date'] = df[ts_col].dt.date
     except Exception:
         df['date'] = None
+
 
    
