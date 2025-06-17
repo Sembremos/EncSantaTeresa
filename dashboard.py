@@ -56,7 +56,7 @@ st.markdown(f"""
 
 
     # Intentar convertir la primera columna a datetime
-    ts_col = header[0]
+ts_col = header[0]
     try:
         df[ts_col] = pd.to_datetime(df[ts_col], errors='coerce')
         df['date'] = df[ts_col].dt.date
