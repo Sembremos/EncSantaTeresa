@@ -30,13 +30,31 @@ def conectar_google_sheets():
             "https://spreadsheets.google.com/feeds",
             "https://www.googleapis.com/auth/drive"
         ]
-        creds_dict = st.secrets["gcp_service_account"]
+        # Obtener credenciales desde st.secrets
+        creds_dict = st.secrets.get("gcp_service_account")
+        if not creds_dict:
+            st.error("❌ No se encontró 'gcp_service_account' en st.secrets.")
+            return None
+
         creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
         client = gspread.authorize(creds)
-        sheet = client.open_by_key("1xmQOqnUJUHhLEcBSDAbZX3wNGYmSe34ec8RWaxAUI10").sheet1
 
-        # Crear encabezados si la hoja está vacía
-        if len(sheet.get_all_values()) == 0:
+        # Abre la hoja por key (asegúrate que la key esté correcta)
+        SPREADSHEET_KEY = "1xmQOqnUJUHhLEcBSDAbZX3wNGYmSe34ec8RWaxAUI10"
+        try:
+            sheet = client.open_by_key(SPREADSHEET_KEY).sheet1
+        except Exception as e:
+            st.error(f"❌ No se pudo abrir el spreadsheet con la key indicada: {e}")
+            return None
+
+        # --- Crear encabezados si la hoja está vacía ---
+        try:
+            current = sheet.get_all_values()  # lista de filas con valores
+        except Exception as e:
+            st.error(f"❌ Error al leer valores de la hoja: {e}")
+            return sheet
+
+        if not current or len(current) == 0:
             headers = [
                 "Fecha y hora", "Distrito", "Barrio", "Edad", "Sexo", "Escolaridad", "Tipo de local",
                 "Percepción de seguridad", "Factores de inseguridad", "Factores sociales",
@@ -45,9 +63,16 @@ def conectar_google_sheets():
                 "Opinión FP", "Cambio de servicio", "Conocimiento policías", "Participación en programa",
                 "Deseo participar", "Medidas FP", "Medidas Municipalidad", "Información adicional"
             ]
-            sheet.append_row(headers)
+            try:
+                # insert_row pone los encabezados en la fila 1
+                sheet.insert_row(headers, 1)
+                st.info("🔧 Encabezados creados automáticamente en la hoja.")
+            except Exception as e:
+                st.error(f"❌ No se pudieron crear encabezados: {e}")
+
         return sheet
-    except Exception:
+    except Exception as e:
+        st.error(f"❌ Error general al conectar con Google Sheets: {e}")
         return None
 
 # === PARTE 2: ESTILOS Y BANNER ===
@@ -117,10 +142,16 @@ label, .stMarkdown p {
 </style>
 """, unsafe_allow_html=True)
 
-banner = Image.open("baner.png")
-st.markdown('<div class="banner-container">', unsafe_allow_html=True)
-st.image(banner, use_container_width=True)
-st.markdown('</div>', unsafe_allow_html=True)
+# Si tu banner no está disponible, comentalo temporalmente para evitar errores
+try:
+    banner = Image.open("baner.png")
+    st.markdown('<div class="banner-container">', unsafe_allow_html=True)
+    st.image(banner, use_container_width=True)
+    st.markdown('</div>', unsafe_allow_html=True)
+except Exception:
+    # no interrumpe la app si la imagen no está disponible
+    pass
+
 st.markdown("""
 **Con el objetivo de fortalecer la seguridad en nuestro entorno comercial, nos enfocamos en abordar las principales preocupaciones de seguridad.**
 La información que nos suministras es completamente confidencial y se emplea exclusivamente con el propósito de mejorar la seguridad en nuestra área comercial.
@@ -279,30 +310,63 @@ if not st.session_state.enviado:
         if errores:
             st.error("⚠️ Faltan campos obligatorios: " + ", ".join(errores))
         else:
+            # Armar datos (usar ; para unir listas)
             datos = [
                 datetime.now().isoformat(), distrito, barrio, edad, sexo, escolaridad, tipo_local,
-                percepcion_seguridad, ", ".join(ordered_factores), ", ".join(ordered_factores_sociales),
-                ", ".join(ordered_delitos_zona), ", ".join(ordered_delitos_sexuales),
-                ", ".join(ordered_asaltos), ", ".join(ordered_robos), victima,
-                ", ".join(motivo_no_denuncia_sel), ", ".join(tipo_delito_sel), horario_delito,
-                ", ".join(modo_operar_sel), opinion_fp, cambio_servicio, conocimiento_policias,
+                percepcion_seguridad, "; ".join(ordered_factores), "; ".join(ordered_factores_sociales),
+                "; ".join(ordered_delitos_zona), "; ".join(ordered_delitos_sexuales),
+                "; ".join(ordered_asaltos), "; ".join(ordered_robos), victima,
+                "; ".join(motivo_no_denuncia_sel), "; ".join(tipo_delito_sel), horario_delito,
+                "; ".join(modo_operar_sel), opinion_fp, cambio_servicio, conocimiento_policias,
                 participacion_programa, deseo_participar, medidas_fp, medidas_muni, info_adicional
             ]
 
             sheet = conectar_google_sheets()
             if sheet:
                 try:
-                    sheet.append_row(datos)
+                    # Asegurar consistencia con encabezados actuales
+                    headers_row = sheet.row_values(1)
+                    headers_len = len(headers_row)
+
+                    # Si por alguna razón la fila de encabezados está vacía, forzamos creación
+                    if headers_len == 0:
+                        st.warning("La fila de encabezados está vacía — intentando crear encabezados por seguridad.")
+                        # crear encabezados básicos según la longitud de 'datos'
+                        default_headers = [f"Col_{i+1}" for i in range(len(datos))]
+                        sheet.insert_row(default_headers, 1)
+                        headers_row = default_headers
+                        headers_len = len(headers_row)
+
+                    # Si enviás más datos que encabezados, ampliamos encabezados con "Extra_X"
+                    if len(datos) > headers_len:
+                        extra = len(datos) - headers_len
+                        new_headers = headers_row + [f"Extra_{i+1}" for i in range(extra)]
+                        sheet.update('A1', [new_headers])
+                        headers_row = new_headers
+                        headers_len = len(new_headers)
+                        st.info(f"🔧 Se ampliaron los encabezados (+{extra}).")
+
+                    # Si enviás menos datos, rellenamos con cadenas vacías
+                    if len(datos) < headers_len:
+                        datos += [""] * (headers_len - len(datos))
+
+                    # Convertir todo a string (evita None)
+                    datos = [str(d) if d is not None else "" for d in datos]
+
+                    # Append la fila al final
+                    sheet.append_row(datos, value_input_option='USER_ENTERED')
+
                     st.session_state.enviado = True
                     st.success("✅ ¡Formulario enviado correctamente!")
                     if st.button("📝 Enviar otra respuesta"):
                         st.session_state.enviado = False
                         st.experimental_rerun()
-                except Exception:
-                    st.error("❌ Error al guardar. Intente de nuevo.")
+                except Exception as e:
+                    st.error(f"❌ Error al guardar: {e}")
             else:
                 st.error("❌ No se pudo conectar con Google Sheets.")
 else:
     st.info("Ya completaste la encuesta. ¡Gracias!")
 
 st.markdown("<p style='text-align:center;color:#88E145;font-size:10px'>Sembremos Seguridad - 2025</p>", unsafe_allow_html=True)
+
