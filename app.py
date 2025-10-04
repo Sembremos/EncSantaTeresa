@@ -87,8 +87,7 @@ st.markdown('<div class="banner-container">', unsafe_allow_html=True)
 st.image(banner, use_container_width=True)
 st.markdown('</div>', unsafe_allow_html=True)
 
-st.markdown(
-    """
+st.markdown("""
 **Con el objetivo de fortalecer la seguridad en nuestro entorno comercial, nos enfocamos en abordar las principales preocupaciones de seguridad.**
 La información que nos suministras es completamente confidencial y se emplea exclusivamente con el propósito de mejorar la seguridad en nuestra área comercial.
 """, unsafe_allow_html=True)
@@ -98,9 +97,7 @@ st.markdown("<div class='expander-title'>Datos Demográficos</div>", unsafe_allo
 with st.expander("", expanded=False):
     distrito = st.selectbox("Distrito:", ["", "Cobano"])
     if distrito == "Cobano":
-        barrio = st.selectbox("Barrios", [
-            "Playa Carmen", "Santa Teresa", "Manzanillo"
-        ])
+        barrio = st.selectbox("Barrios", ["Playa Carmen", "Santa Teresa", "Manzanillo"])
     else:
         barrio = ""
     edad = st.number_input("Edad:", min_value=12, max_value=120, format="%d")
@@ -141,10 +138,11 @@ with st.expander("", expanded=False):
 st.markdown("<div class='expander-title'>Factores de Riesgo Social</div>", unsafe_allow_html=True)
 with st.expander("", expanded=False):
     FIXED_SOCIALES = [
-        "Falta de inversión social","Falta de oportunidades laborales","Conflictos entre residentes locales y extranjeros","Problemas vecinales","Asentamientos ilegales",
-        "Personas en situación de calle","Zona de prostitución","Consumo de alcohol en vía pública","Consumo de drogas","Búnker",
-        "Personas con exceso de tiempo de ocio","Cuarterías","Lotes baldíos","Ventas informales",
-        "Pérdida de espacios públicos","Ausencia de transporte público (bus, taxi)","Otro"
+        "Falta de inversión social","Falta de oportunidades laborales","Conflictos entre residentes locales y extranjeros",
+        "Problemas vecinales","Asentamientos ilegales","Personas en situación de calle","Zona de prostitución",
+        "Consumo de alcohol en vía pública","Consumo de drogas","Búnker","Personas con exceso de tiempo de ocio",
+        "Cuarterías","Lotes baldíos","Ventas informales","Pérdida de espacios públicos",
+        "Ausencia de transporte público (bus, taxi)","Otro"
     ]
     factores_sociales_sel = st.multiselect(
         "¿Cuáles de los siguientes factores afectan la seguridad en su zona comercial?", FIXED_SOCIALES
@@ -159,7 +157,8 @@ st.markdown("<div class='expander-title'>Situaciones Relacionadas a Delitos</div
 with st.expander("", expanded=False):
     FIXED_DELITOS = [
         "Disturbios en vía pública","Daños a la propiedad","Intimidación o amenazas con fines de lucro",
-        "Estafas","Hurto(Sustracción de artículos mediante el descuido)","Receptación","Contrabando","Venta de droga","Violencia doméstica","Homicidios","Heridos"
+        "Estafas","Hurto(Sustracción de artículos mediante el descuido)","Receptación","Contrabando",
+        "Venta de droga","Violencia doméstica","Homicidios","Heridos"
     ]
     delitos_zona_sel = st.multiselect("¿Seleccione los delitos que considere que ocurren en la zona?", FIXED_DELITOS)
     ordered_delitos_zona = [f for f in FIXED_DELITOS if f in delitos_zona_sel]
@@ -168,26 +167,22 @@ with st.expander("", expanded=False):
     delitos_sexuales_sel = st.multiselect("¿Qué delitos sexuales ha percibido que existen en la zona?", FIXED_SEXUALES)
     ordered_delitos_sexuales = [f for f in FIXED_SEXUALES if f in delitos_sexuales_sel]
 
-    FIXED_ASALTOS = [
-        "Asalto a personas","Asalto a comercio","Asalto a vivienda","Asalto a transporte público"
-    ]
+    FIXED_ASALTOS = ["Asalto a personas","Asalto a comercio","Asalto a vivienda","Asalto a transporte público"]
     asaltos_sel = st.multiselect("¿Qué tipos de asaltos hay en la zona?", FIXED_ASALTOS)
     ordered_asaltos = [f for f in FIXED_ASALTOS if f in asaltos_sel]
 
-    FIXED_ROBOS = [
-        "Robo a comercio","Robo a edificaciones","Robo a vivienda","Tacha de vehículos","Robo de vehículos"
-    ]
+    FIXED_ROBOS = ["Robo a comercio","Robo a edificaciones","Robo a vivienda","Tacha de vehículos","Robo de vehículos"]
     robos_sel = st.multiselect("¿Qué tipos de robos ha identificado?", FIXED_ROBOS)
     ordered_robos = [f for f in FIXED_ROBOS if f in robos_sel]
 
-# === PARTE 7: INFORMACIÓN ADICIONAL Y VICTIMIZACIÓN ===
+# === PARTE 7: VICTIMIZACIÓN ===
 st.markdown("<div class='expander-title'>Victimización e Información Adicional</div>", unsafe_allow_html=True)
 with st.expander("", expanded=False):
     victima = st.radio(
-        "¿Usted ha sido víctima de algún delito en los últimos 12 meses?",[
-            "Sí, y presenté la denuncia","Sí, pero no presenté la denuncia","No","Prefiero no responder"
-        ]
+        "¿Usted ha sido víctima de algún delito en los últimos 12 meses?",
+        ["Sí, y presenté la denuncia","Sí, pero no presenté la denuncia","No","Prefiero no responder"]
     )
+
     FIXED_NO_DENUNCIA = [
         "Distancia","Miedo a represalias","Falta de respuesta","Experiencias previas fallidas",
         "Complejidad al denunciar","Desconocimiento de dónde denunciar","Consejo policial","Falta de tiempo"
@@ -248,17 +243,17 @@ if not st.session_state.enviado:
                 datetime.now().isoformat(),
                 distrito, barrio, edad, sexo, escolaridad, tipo_local,
                 percepcion_seguridad,
-                ", ".join(ordered_factores),
-                ", ".join(ordered_factores_sociales),
-                ", ".join(ordered_delitos_zona),
-                ", ".join(ordered_delitos_sexuales),
-                ", ".join(ordered_asaltos),
-                ", ".join(ordered_robos),
+                "; ".join(ordered_factores),
+                "; ".join(ordered_factores_sociales),
+                "; ".join(ordered_delitos_zona),
+                "; ".join(ordered_delitos_sexuales),
+                "; ".join(ordered_asaltos),
+                "; ".join(ordered_robos),
                 victima,
-                ", ".join(motivo_no_denuncia_sel),
-                ", ".join(tipo_delito_sel),
+                "; ".join(motivo_no_denuncia_sel),
+                "; ".join(tipo_delito_sel),
                 horario_delito,
-                ", ".join(modo_operar_sel),
+                "; ".join(modo_operar_sel),
                 opinion_fp,
                 cambio_servicio,
                 conocimiento_policias,
@@ -268,6 +263,9 @@ if not st.session_state.enviado:
                 medidas_muni,
                 info_adicional
             ]
+            
+            st.write(f"Enviando {len(datos)} columnas...")  # Debug opcional
+            
             sheet = conectar_google_sheets()
             if sheet:
                 try:
@@ -277,8 +275,8 @@ if not st.session_state.enviado:
                     if st.button("📝 Enviar otra respuesta"):
                         st.session_state.enviado = False
                         st.experimental_rerun()
-                except Exception:
-                    st.error("❌ Error al guardar. Intente de nuevo.")
+                except Exception as e:
+                    st.error(f"❌ Error al guardar: {e}")
 else:
     st.info("Ya completaste la encuesta. ¡Gracias!")
 
