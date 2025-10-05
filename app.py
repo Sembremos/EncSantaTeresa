@@ -126,5 +126,34 @@ with st.form("formulario_samara"):
     p3 = st.radio("Confío en que la policía tomará en serio una denuncia", ["Muy en desacuerdo", "En desacuerdo", "Neutral", "De acuerdo", "Muy de acuerdo"])
     p4 = st.radio("La policía trata al público con profesionalismo y respeto", ["Muy en desacuerdo", "En desacuerdo", "Neutral", "De acuerdo", "Muy de acuerdo"])
     p5 = st.radio("La policía cuenta con recursos suficientes", ["Muy en desacuerdo", "En desacuerdo", "Neutral", "De acuerdo", "Muy de acuerdo"])
-    p6 = st.radio("Los programas policiales han sido efectivos", ["Muy en desacuerdo", "En desacuerdo", "Neutral", "De acuerdo",]()
+    p6 = st.radio("Los programas policiales han sido efectivos", ["Muy en desacuerdo", "En desacuerdo", "Neutral", "De acuerdo", "Muy de acuerdo"])
 
+    razones = st.multiselect(
+        "Si ha dudado en denunciar, ¿cuál fue la razón principal?",
+        ["Miedo a represalias", "Creencia de impunidad", "Proceso lento o complicado",
+         "Falta de confidencialidad", "Incidente menor", "Alerto por canales informales",
+         "No he dudado en denunciar", "Otra razón"]
+    )
+    confianza = st.radio(
+        "¿Qué acción por parte de la policía aumentaría más su confianza?",
+        ["Ver patrullajes a pie constantes", "Respuestas más rápidas", "Denuncias con resultados efectivos",
+         "Reuniones periódicas con comerciantes", "Otra (especifique)"]
+    )
+    alianza = st.radio(
+        "¿Estaría dispuesto a participar en una alianza público-privada para un proyecto de seguridad?",
+        ["Sí, definitivamente", "Sí, dependiendo del costo", "Quizás, necesito más información", "No"]
+    )
+
+    enviado = st.form_submit_button("Enviar")
+
+if enviado:
+    datos = [
+        categoria, años, clientes, ", ".join(medidas), ", ".join(cambios),
+        impacto, frecuencia, delito, frecuencia_delito, riesgo,
+        urgencia1, urgencia2, urgencia3, urgencia4, urgencia5,
+        efecto1, efecto2, efecto3, efecto4, efecto5,
+        p1, p2, p3, p4, p5, p6,
+        ", ".join(razones), confianza, alianza
+    ]
+    sheet.append_row(datos)
+    st.success("✅ ¡Gracias! Su respuesta se ha registrado correctamente.")
