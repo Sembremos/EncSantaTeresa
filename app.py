@@ -1,372 +1,136 @@
 import streamlit as st
 import pandas as pd
-from datetime import datetime
 import gspread
-from oauth2client.service_account import ServiceAccountCredentials
-from PIL import Image
+from google.oauth2.service_account import Credentials
 
-# === PARTE 0: CONFIGURACIÓN INICIAL Y SESIÓN ===
-if "enviado" not in st.session_state:
-    st.session_state.enviado = False
+# Configuración de Google Sheets
+SCOPE = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
+creds = Credentials.from_service_account_info(st.secrets["gcp_service_account"], scopes=SCOPE)
+client = gspread.authorize(creds)
+sheet = client.open("Formulario Seguridad Sámara").sheet1  # Cambia el nombre según tu hoja
 
-# Valores por defecto para variables de preguntas retiradas
-escolaridad = ""
-tipo_local = ""
-falta_de_inversion = []
-consumo_drogas = []
-bunker = []
-venta_drogas = []
-delitos_vida = []
-estafas = []
-observacion_control = ""
-descripcion_control = []
-exigencia_cuota = ""
-descripcion_cuota = ""
+# ========================
+# Crear encabezados si no existen
+# ========================
+headers = [
+    "Categoría del negocio",
+    "Años de operación",
+    "Tipo de cliente principal",
+    "Medidas de seguridad implementadas",
+    "Cambios operativos realizados",
+    "Impacto en las ventas",
+    "Frecuencia de comentarios sobre seguridad",
+    "Delito más preocupante",
+    "Frecuencia de delitos",
+    "Momento de mayor riesgo",
+    "Urgencia: Aumentar oficiales",
+    "Urgencia: Aumentar patrullaje a pie",
+    "Urgencia: Mejorar iluminación",
+    "Urgencia: Cámaras monitoreadas",
+    "Urgencia: Programas policiales",
+    "Efecto disuasorio: Mayor presencia policial",
+    "Efecto disuasorio: OIJ efectivo",
+    "Efecto disuasorio: Cámaras estratégicas",
+    "Efecto disuasorio: Controles de carretera",
+    "Efecto disuasorio: Programas sociales",
+    "Percepción: Presencia policial suficiente",
+    "Percepción: Tiempo de respuesta rápido",
+    "Percepción: Confianza en denuncias",
+    "Percepción: Profesionalismo policial",
+    "Percepción: Recursos suficientes",
+    "Percepción: Programas efectivos",
+    "Razones para no denunciar",
+    "Acción que aumentaría confianza",
+    "Disposición para alianza público-privada"
+]
 
-# === PARTE 1: IMPORTACIONES Y CONEXIÓN A GOOGLE SHEETS ===
-def conectar_google_sheets():
-    try:
-        scope = [
-            "https://spreadsheets.google.com/feeds",
-            "https://www.googleapis.com/auth/drive"
-        ]
-        # Obtener credenciales desde st.secrets
-        creds_dict = st.secrets.get("gcp_service_account")
-        if not creds_dict:
-            st.error("❌ No se encontró 'gcp_service_account' en st.secrets.")
-            return None
+if len(sheet.get_all_values()) == 0:
+    sheet.append_row(headers)
 
-        creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
-        client = gspread.authorize(creds)
+st.title("Encuesta: Seguridad en Sámara")
+st.markdown("Por favor, complete el siguiente formulario de manera anónima. Sus respuestas son confidenciales.")
 
-        # Abre la hoja por key (asegúrate que la key esté correcta)
-        SPREADSHEET_KEY = "1xmQOqnUJUHhLEcBSDAbZX3wNGYmSe34ec8RWaxAUI10"
-        try:
-            sheet = client.open_by_key(SPREADSHEET_KEY).sheet1
-        except Exception as e:
-            st.error(f"❌ No se pudo abrir el spreadsheet con la key indicada: {e}")
-            return None
+with st.form("formulario_samara"):
+    st.subheader("Sección 1: Perfil de su Negocio")
+    categoria = st.radio("1. ¿Cuál de las siguientes categorías describe mejor su negocio?", 
+                         ["Hotelería / Hospedaje", "Restaurante / Bar", "Tour Operador / Actividad Turística", 
+                          "Tienda / Supermercado", "Otro (especifique)"])
+    
+    años = st.radio("2. ¿Hace cuántos años opera su negocio en Sámara?", 
+                    ["Menos de 2 años", "Entre 2 y 5 años", "Entre 6 y 10 años", "Más de 10 años"])
+    
+    clientes = st.radio("3. ¿Quiénes son su principal tipo de cliente?", 
+                        ["Principalmente turistas extranjeros", "Principalmente turistas nacionales", 
+                         "Una mezcla equilibrada de turistas y residentes locales", "Principalmente residentes locales"])
 
-        # --- Crear encabezados si la hoja está vacía ---
-        try:
-            current = sheet.get_all_values()  # lista de filas con valores
-        except Exception as e:
-            st.error(f"❌ Error al leer valores de la hoja: {e}")
-            return sheet
+    st.subheader("Sección 2: Impacto en su Negocio")
+    medidas = st.multiselect("4. ¿Cuáles medidas de seguridad ha implementado o reforzado?", 
+                             ["Seguridad privada / guarda", "Cámaras de vigilancia", "Sistema de alarmas", 
+                              "Mejora de iluminación", "Reforzamiento de cerraduras", "No he implementado nuevas medidas", "Otra"])
+    
+    cambios = st.multiselect("5. ¿Ha realizado alguno de los siguientes cambios operativos?", 
+                             ["Reducido horario", "Modificado horarios de personal", "Acompañar clientes/personal", 
+                              "Mayor rotación o dificultad para contratar", "No he realizado cambios", "Otro"])
+    
+    impacto = st.radio("6. ¿Cómo calificaría el impacto de la inseguridad en sus ventas?", 
+                       ["Muy negativo", "Negativo", "Poco o ningún impacto", "No estoy seguro/a"])
+    
+    frecuencia = st.radio("7. ¿Con qué frecuencia recibe comentarios de clientes sobre seguridad?", 
+                          ["Muy frecuentemente", "Frecuentemente", "Ocasionalmente", "Casi nunca"])
 
-        if not current or len(current) == 0:
-            headers = [
-                "Fecha y hora", "Distrito", "Barrio", "Edad", "Sexo", "Escolaridad", "Tipo de local",
-                "Percepción de seguridad", "Factores de inseguridad", "Factores sociales",
-                "Delitos zona", "Delitos sexuales", "Asaltos", "Robos", "Victimización",
-                "Motivo de no denuncia", "Tipo de delito", "Horario del delito", "Modo de operar",
-                "Opinión FP", "Cambio de servicio", "Conocimiento policías", "Participación en programa",
-                "Deseo participar", "Medidas FP", "Medidas Municipalidad", "Información adicional"
-            ]
-            try:
-                # insert_row pone los encabezados en la fila 1
-                sheet.insert_row(headers, 1)
-                st.info("🔧 Encabezados creados automáticamente en la hoja.")
-            except Exception as e:
-                st.error(f"❌ No se pudieron crear encabezados: {e}")
+    st.subheader("Sección 3: Caracterización del Delito")
+    delito = st.radio("8. ¿Cuál es el delito más preocupante?", 
+                      ["Hurtos a turistas", "Robos a locales comerciales", "Tachas o robos a vehículos", 
+                       "Asaltos o arrebatos en vía pública", "Venta de drogas"])
+    
+    frecuencia_delito = st.radio("9. Frecuencia de estos delitos:", 
+                                 ["Constante", "Frecuente", "Periódica", "Poco frecuente"])
+    
+    riesgo = st.radio("10. ¿Cuándo hay mayor riesgo?", 
+                      ["Durante la noche", "Durante la madrugada", "Durante el día", "Constante a toda hora"])
 
-        return sheet
-    except Exception as e:
-        st.error(f"❌ Error general al conectar con Google Sheets: {e}")
-        return None
+    st.subheader("Sección 4: Soluciones y Prioridades")
+    urgencia1 = st.slider("11a. Aumentar oficiales de Fuerza Pública", 1, 5, 3)
+    urgencia2 = st.slider("11b. Aumentar patrullaje a pie", 1, 5, 3)
+    urgencia3 = st.slider("11c. Mejorar iluminación pública", 1, 5, 3)
+    urgencia4 = st.slider("11d. Instalar cámaras monitoreadas", 1, 5, 3)
+    urgencia5 = st.slider("11e. Implementar programas policiales efectivos", 1, 5, 3)
 
-# === PARTE 2: ESTILOS Y BANNER ===
-st.markdown("""
-<style>
-html, body, .stApp {
-    color-scheme: light !important;
-    background-color: #2C517A !important;
-    color: #ffffff !important;
-    font-weight: bold !important;
-}
-h1, h2, h3 { color: #FAFEF3; }
-.expander-title {
-    background-color: #347A59;
-    color: #ffffff;
-    font-size:18px;
-    font-weight:bold;
-    border-radius:10px;
-    padding:15px 20px;
-    margin-bottom:-20px;
-    text-align:left;
-}
-summary::marker { display:none; }
-div[data-testid="stExpander"] > div {
-    background-color:#ffffff;
-    border:2px solid #ff4b4b;
-    border-radius:12px;
-    padding:10px;
-}
-.stSelectbox > div, .stRadio > div, .stMultiSelect > div, .stTextArea > div {
-    background-color:#51924b;
-    border:2px solid #51924b;
-    border-radius:10px;
-    padding:10px;
-    color:#2C517A !important;
-}
-.stButton > button {
-    background-color:#DF912F;
-    color:#ffffff;
-    border:none;
-    border-radius:10px;
-    padding:10px 24px;
-    font-size:16px;
-}
-.stButton > button:hover {
-    background-color:#DF912F;
-    color:white;
-}
-div[role="radiogroup"] label[data-selected="true"],
-div[role="listbox"] div[data-selected="true"] {
-    color:#ffffff !important;
-    border-radius:8px !important;
-    font-weight:bold !important;
-}
-div[role="radiogroup"] label[data-selected="true"]::after,
-div[role="listbox"] div[data-selected="true"]::after {
-    content:" ✅";
-    margin-left:6px;
-}
-label, .stMarkdown p {
-    color:#ffffff !important;
-    font-weight:600;
-}
-@media only screen and (max-width:768px) {
-    iframe { height:300px !important; max-height:300px !important; }
-}
-</style>
-""", unsafe_allow_html=True)
+    efecto1 = st.slider("12a. Mayor presencia policial visible", 1, 5, 3)
+    efecto2 = st.slider("12b. OIJ efectivo", 1, 5, 3)
+    efecto3 = st.slider("12c. Cámaras estratégicas", 1, 5, 3)
+    efecto4 = st.slider("12d. Controles de carretera", 1, 5, 3)
+    efecto5 = st.slider("12e. Programas sociales para jóvenes", 1, 5, 3)
 
-# Si tu banner no está disponible, comentalo temporalmente para evitar errores
-try:
-    banner = Image.open("baner.png")
-    st.markdown('<div class="banner-container">', unsafe_allow_html=True)
-    st.image(banner, use_container_width=True)
-    st.markdown('</div>', unsafe_allow_html=True)
-except Exception:
-    # no interrumpe la app si la imagen no está disponible
-    pass
+    st.subheader("Percepción sobre la Fuerza Pública")
+    p1 = st.radio("13a. Presencia policial suficiente", ["Muy en desacuerdo", "En desacuerdo", "Neutral", "De acuerdo", "Muy de acuerdo"])
+    p2 = st.radio("13b. Tiempo de respuesta rápido", ["Muy en desacuerdo", "En desacuerdo", "Neutral", "De acuerdo", "Muy de acuerdo"])
+    p3 = st.radio("13c. Confianza en denuncias", ["Muy en desacuerdo", "En desacuerdo", "Neutral", "De acuerdo", "Muy de acuerdo"])
+    p4 = st.radio("13d. Profesionalismo policial", ["Muy en desacuerdo", "En desacuerdo", "Neutral", "De acuerdo", "Muy de acuerdo"])
+    p5 = st.radio("13e. Recursos suficientes", ["Muy en desacuerdo", "En desacuerdo", "Neutral", "De acuerdo", "Muy de acuerdo"])
+    p6 = st.radio("13f. Programas policiales efectivos", ["Muy en desacuerdo", "En desacuerdo", "Neutral", "De acuerdo", "Muy de acuerdo"])
 
-st.markdown("""
-**Con el objetivo de fortalecer la seguridad en nuestro entorno comercial, nos enfocamos en abordar las principales preocupaciones de seguridad.**
-La información que nos suministras es completamente confidencial y se emplea exclusivamente con el propósito de mejorar la seguridad en nuestra área comercial.
-""", unsafe_allow_html=True)
+    razones = st.multiselect("14. Razones para no denunciar", 
+                             ["Miedo a represalias", "Creencia de impunidad", "Proceso lento", "Falta de confidencialidad", 
+                              "Incidente menor", "Alerto por canales informales", "No he dudado en denunciar", "Otra razón"])
 
-# === PARTE 3: DATOS DEMOGRÁFICOS Y MAPA ===
-st.markdown("<div class='expander-title'>Datos Demográficos</div>", unsafe_allow_html=True)
-with st.expander("", expanded=False):
-    distrito = st.selectbox("Distrito:", ["", "Cobano"])
-    if distrito == "Cobano":
-        barrio = st.selectbox("Barrios", ["Playa Carmen", "Santa Teresa", "Manzanillo"])
-    else:
-        barrio = ""
-    edad = st.number_input("Edad:", min_value=12, max_value=120, format="%d")
-    sexo = st.selectbox("Sexo:", ["","Hombre","Mujer","LGBTQ+","Otro / Prefiero No decirlo"])
+    confianza = st.radio("15. ¿Qué acción aumentaría su confianza?", 
+                         ["Patrullajes a pie constantes", "Respuestas rápidas", "Denuncias con resultados", 
+                          "Reuniones periódicas con comerciantes", "Otra"])
 
-# === PARTE 4: PERCEPCIÓN DE SEGURIDAD ===
-st.markdown("<div class='expander-title'>Percepción de Seguridad</div>", unsafe_allow_html=True)
-with st.expander("", expanded=False):
-    percepcion_seguridad = st.radio(
-        "¿Qué tan seguro(a) se siente en esta zona?",
-        ["Muy seguro(a)","Seguro(a)","Ni seguro(a) Ni inseguro(a)","Inseguro(a)","Muy inseguro(a)"]
-    )
-    st.caption("Nota: respuesta de selección única.")
-    FIXED_FACTORES = [
-        "Presencia de personas desconocidas o comportamientos inusuales",
-        "Poca iluminación en la zona","Escasa presencia policial","Robos frecuentes",
-        "Consumo de sustancias en la vía pública","Horarios considerados peligrosos (Entre las 6:00pm y las 5:00am)",
-        "Disturbios o riñas cercanas","Otro"
+    alianza = st.radio("16. ¿Participaría en una alianza público-privada?", 
+                       ["Sí, definitivamente", "Sí, dependiendo del costo y plan", "Quizás, necesitaría más información", "No"])
+
+    enviado = st.form_submit_button("Enviar respuestas")
+
+if enviado:
+    datos = [
+        categoria, años, clientes, ", ".join(medidas), ", ".join(cambios), impacto, frecuencia, delito, 
+        frecuencia_delito, riesgo, urgencia1, urgencia2, urgencia3, urgencia4, urgencia5,
+        efecto1, efecto2, efecto3, efecto4, efecto5,
+        p1, p2, p3, p4, p5, p6, ", ".join(razones), confianza, alianza
     ]
-    factores_inseguridad = []
-    ordered_factores = []
-    if percepcion_seguridad in ["Inseguro(a)", "Muy inseguro(a)"]:
-        factores_inseguridad = st.multiselect("¿Por qué se siente inseguro(a)?", FIXED_FACTORES)
-        if "Otro" in factores_inseguridad:
-            otro_desc = st.text_input("Otro (describa)")
-            if otro_desc:
-                factores_inseguridad.append(f"Otro: {otro_desc}")
-        ordered_factores = [f for f in FIXED_FACTORES if f in factores_inseguridad]
-        extras = [f for f in factores_inseguridad if f.startswith("Otro:")]
-        if extras:
-            ordered_factores += extras
+    sheet.append_row(datos)
+    st.success("✅ ¡Gracias! Su respuesta ha sido registrada correctamente.")
 
-# === PARTE 5: FACTORES DE RIESGO SOCIAL ===
-st.markdown("<div class='expander-title'>Factores de Riesgo Social</div>", unsafe_allow_html=True)
-with st.expander("", expanded=False):
-    FIXED_SOCIALES = [
-        "Falta de inversión social","Falta de oportunidades laborales","Conflictos entre residentes locales y extranjeros",
-        "Problemas vecinales","Asentamientos ilegales","Personas en situación de calle","Zona de prostitución",
-        "Consumo de alcohol en vía pública","Consumo de drogas","Búnker","Personas con exceso de tiempo de ocio",
-        "Cuarterías","Lotes baldíos","Ventas informales","Pérdida de espacios públicos","Ausencia de transporte público (bus, taxi)","Otro"
-    ]
-    factores_sociales_sel = st.multiselect(
-        "¿Cuáles de los siguientes factores afectan la seguridad en su zona comercial?",
-        FIXED_SOCIALES
-    )
-    ordered_factores_sociales = [f for f in FIXED_SOCIALES if f in factores_sociales_sel]
-    extras_soc = [f for f in factores_sociales_sel if f == "Otro"]
-    if extras_soc:
-        ordered_factores_sociales += extras_soc
-
-# === PARTE 6: SITUACIONES RELACIONADAS A DELITOS ===
-st.markdown("<div class='expander-title'>Situaciones Relacionadas a Delitos</div>", unsafe_allow_html=True)
-with st.expander("", expanded=False):
-    FIXED_DELITOS = [
-        "Disturbios en vía pública","Daños a la propiedad","Intimidación o amenazas con fines de lucro","Estafas",
-        "Hurto(Sustracción de artículos mediante el descuido)","Receptación","Contrabando","Venta de droga",
-        "Violencia doméstica","Homicidios","Heridos"
-    ]
-    delitos_zona_sel = st.multiselect("¿Seleccione los delitos que considere que ocurren en la zona?", FIXED_DELITOS)
-    ordered_delitos_zona = [f for f in FIXED_DELITOS if f in delitos_zona_sel]
-
-    FIXED_SEXUALES = ["Abuso sexual","Acoso sexual","Violación","Acoso sexual callejero"]
-    delitos_sexuales_sel = st.multiselect("¿Qué delitos sexuales ha percibido que existen en la zona?", FIXED_SEXUALES)
-    ordered_delitos_sexuales = [f for f in FIXED_SEXUALES if f in delitos_sexuales_sel]
-
-    FIXED_ASALTOS = ["Asalto a personas","Asalto a comercio","Asalto a vivienda","Asalto a transporte público"]
-    asaltos_sel = st.multiselect("¿Qué tipos de asaltos hay en la zona?", FIXED_ASALTOS)
-    ordered_asaltos = [f for f in FIXED_ASALTOS if f in asaltos_sel]
-
-    FIXED_ROBOS = ["Robo a comercio","Robo a edificaciones","Robo a vivienda","Tacha de vehículos","Robo de vehículos"]
-    robos_sel = st.multiselect("¿Qué tipos de robos ha identificado?", FIXED_ROBOS)
-    ordered_robos = [f for f in FIXED_ROBOS if f in robos_sel]
-
-# === PARTE 7: INFORMACIÓN ADICIONAL Y VICTIMIZACIÓN ===
-st.markdown("<div class='expander-title'>Victimización e Información Adicional</div>", unsafe_allow_html=True)
-with st.expander("", expanded=False):
-    victima = st.radio(
-        "¿Usted ha sido víctima de algún delito en los últimos 12 meses?",
-        ["Sí, y presenté la denuncia","Sí, pero no presenté la denuncia","No","Prefiero no responder"]
-    )
-
-    FIXED_NO_DENUNCIA = [
-        "Distancia","Miedo a represalias","Falta de respuesta","Experiencias previas fallidas",
-        "Complejidad al denunciar","Desconocimiento de dónde denunciar","Consejo policial","Falta de tiempo"
-    ]
-    motivo_no_denuncia_sel = []
-    tipo_delito_sel = []
-    horario_delito = ""
-    modo_operar_sel = []
-
-    if victima == "Sí, pero no presenté la denuncia":
-        motivo_no_denuncia_sel = st.multiselect("¿Por qué no denunció?", FIXED_NO_DENUNCIA)
-
-    if victima in ["Sí, y presenté la denuncia","Sí, pero no presenté la denuncia"]:
-        FIXED_TIPO = [
-            "Hurto","Asalto","Cobro por protección","Estafa","Daños a la propiedad",
-            "Venta o consumo de drogas","Amenazas","Cobros periódicos","Otro"
-        ]
-        tipo_delito_sel = st.multiselect("¿Cuál fue el delito?", FIXED_TIPO)
-        horario_delito = st.selectbox(
-            "¿Conoce el horario en el que ocurrió el hecho?",
-            ["","00:00-02:59","03:00-05:59","06:00-08:59","09:00-11:59","12:00-14:59","15:00-17:59",
-             "18:00-20:59","21:00-23:59","Desconocido"]
-        )
-        FIXED_MODO = ["Arma blanca","Arma de fuego","Amenazas","Cobros/cuotas","Arrebato","Boquete","Ganzúa","Engaño","No sé","Otro"]
-        modo_operar_sel = st.multiselect("¿Cómo operaban los responsables?", FIXED_MODO)
-
-    opinion_fp = st.radio("¿Cómo califica el servicio policial?", ["Excelente","Bueno","Regular","Mala","Muy mala"])
-    cambio_servicio = st.radio("¿Ha cambiado el servicio en 12 meses?", ["Ha mejorado mucho","Ha mejorado","Igual","Ha empeorado","Ha empeorado mucho"])
-    conocimiento_policias = st.radio("¿Conoce policías que patrullan su zona?", ["Sí","No"])
-    participacion_programa = st.radio(
-        "¿Conoce/participa en Programa de Seguridad Comercial?",
-        ["No lo conozco","Lo conozco, pero no participo","Lo conozco y participo","Me gustaría participar","Prefiero no responder"]
-    )
-
-    deseo_participar = ""
-    if participacion_programa in ["No lo conozco","Lo conozco, pero no participo","Me gustaría participar"]:
-        deseo_participar = st.text_area("Si desea contactar, indique nombre, correo y teléfono:")
-
-    medidas_fp = st.text_area("¿Qué medidas considera usted que debe implementar la Fuerza Pública?")
-    medidas_muni = st.text_area("¿Qué medidas considera usted que debe implementar la Municipalidad?")
-    info_adicional = st.text_area("¿Otra información que desee añadir?")
-
-# === PARTE 8: ENVÍO Y VALIDACIÓN ===
-if not st.session_state.enviado:
-    if st.button("Enviar formulario"):
-        errores = []
-        if not distrito:
-            errores.append("Distrito")
-        if not sexo:
-            errores.append("Sexo")
-        if not percepcion_seguridad:
-            errores.append("Percepción de seguridad")
-        if not victima:
-            errores.append("Victimización")
-        if not opinion_fp:
-            errores.append("Opinión sobre FP")
-        if not cambio_servicio:
-            errores.append("Cambio de servicio")
-        if not conocimiento_policias:
-            errores.append("Conocimiento de policías")
-        if not participacion_programa:
-            errores.append("Participación en programa")
-
-        if errores:
-            st.error("⚠️ Faltan campos obligatorios: " + ", ".join(errores))
-        else:
-            # Armar datos (usar ; para unir listas)
-            datos = [
-                datetime.now().isoformat(), distrito, barrio, edad, sexo, escolaridad, tipo_local,
-                percepcion_seguridad, "; ".join(ordered_factores), "; ".join(ordered_factores_sociales),
-                "; ".join(ordered_delitos_zona), "; ".join(ordered_delitos_sexuales),
-                "; ".join(ordered_asaltos), "; ".join(ordered_robos), victima,
-                "; ".join(motivo_no_denuncia_sel), "; ".join(tipo_delito_sel), horario_delito,
-                "; ".join(modo_operar_sel), opinion_fp, cambio_servicio, conocimiento_policias,
-                participacion_programa, deseo_participar, medidas_fp, medidas_muni, info_adicional
-            ]
-
-            sheet = conectar_google_sheets()
-            if sheet:
-                try:
-                    # Asegurar consistencia con encabezados actuales
-                    headers_row = sheet.row_values(1)
-                    headers_len = len(headers_row)
-
-                    # Si por alguna razón la fila de encabezados está vacía, forzamos creación
-                    if headers_len == 0:
-                        st.warning("La fila de encabezados está vacía — intentando crear encabezados por seguridad.")
-                        # crear encabezados básicos según la longitud de 'datos'
-                        default_headers = [f"Col_{i+1}" for i in range(len(datos))]
-                        sheet.insert_row(default_headers, 1)
-                        headers_row = default_headers
-                        headers_len = len(headers_row)
-
-                    # Si enviás más datos que encabezados, ampliamos encabezados con "Extra_X"
-                    if len(datos) > headers_len:
-                        extra = len(datos) - headers_len
-                        new_headers = headers_row + [f"Extra_{i+1}" for i in range(extra)]
-                        sheet.update('A1', [new_headers])
-                        headers_row = new_headers
-                        headers_len = len(new_headers)
-                        st.info(f"🔧 Se ampliaron los encabezados (+{extra}).")
-
-                    # Si enviás menos datos, rellenamos con cadenas vacías
-                    if len(datos) < headers_len:
-                        datos += [""] * (headers_len - len(datos))
-
-                    # Convertir todo a string (evita None)
-                    datos = [str(d) if d is not None else "" for d in datos]
-
-                    # Append la fila al final
-                    sheet.append_row(datos, value_input_option='USER_ENTERED')
-
-                    st.session_state.enviado = True
-                    st.success("✅ ¡Formulario enviado correctamente!")
-                    if st.button("📝 Enviar otra respuesta"):
-                        st.session_state.enviado = False
-                        st.experimental_rerun()
-                except Exception as e:
-                    st.error(f"❌ Error al guardar: {e}")
-            else:
-                st.error("❌ No se pudo conectar con Google Sheets.")
-else:
-    st.info("Ya completaste la encuesta. ¡Gracias!")
-
-st.markdown("<p style='text-align:center;color:#88E145;font-size:10px'>Sembremos Seguridad - 2025</p>", unsafe_allow_html=True)
 
