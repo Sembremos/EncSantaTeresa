@@ -168,7 +168,7 @@ label, .stMarkdown p {
 
 # Si tu banner no está disponible, comentalo temporalmente para evitar errores
 try:
-    banner = Image.open("baner.png")
+    banner = Image.open("baner1.png")
     st.markdown('<div class="banner-container">', unsafe_allow_html=True)
     st.image(banner, use_container_width=True)
     st.markdown('</div>', unsafe_allow_html=True)
