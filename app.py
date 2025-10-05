@@ -178,7 +178,7 @@ except Exception:
 
 st.markdown("""
 **Con el objetivo de fortalecer la seguridad en nuestro entorno comercial, nos enfocamos en abordar las principales preocupaciones de seguridad.**
-La información que nos suministras es completamente confidencial y se emplea exclusivamente con el propósito de mejorar la seguridad en nuestra área comercial.
+La información que nos suministras es completamente confidencial y se emplea exclusivamente con el propósito de mejorar la seguridad en nuestra área comercial holalola.
 """, unsafe_allow_html=True)
 
 # === NUEVO FORMULARIO (16 preguntas solicitadas) ===
