@@ -168,7 +168,7 @@ label, .stMarkdown p {
 
 # Si tu banner no está disponible, comentalo temporalmente para evitar errores
 try:
-    banner = Image.open("baner1.png")
+    banner = Image.open("baner.png")
     st.markdown('<div class="banner-container">', unsafe_allow_html=True)
     st.image(banner, use_container_width=True)
     st.markdown('</div>', unsafe_allow_html=True)
@@ -178,7 +178,7 @@ except Exception:
 
 st.markdown("""
 **Con el objetivo de fortalecer la seguridad en nuestro entorno comercial, nos enfocamos en abordar las principales preocupaciones de seguridad.**
-La información que nos suministras es completamente confidencial y se emplea exclusivamente con el propósito de mejorar la seguridad en nuestra área comercial holalola.
+La información que nos suministras es completamente confidencial y se emplea exclusivamente con el propósito de mejorar la seguridad en nuestra área comercial.
 """, unsafe_allow_html=True)
 
 # === NUEVO FORMULARIO (16 preguntas solicitadas) ===
