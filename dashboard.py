@@ -5,7 +5,7 @@ from oauth2client.service_account import ServiceAccountCredentials
 from datetime import datetime
 
 # Configuración de la página
-TITLE = "📊 Cantidad de Encuestas – Santa Teresa"
+TITLE = "📊 Cantidad de Encuestas – SAMARA"
 st.set_page_config(page_title=TITLE, layout="wide")
 st.title(TITLE)
 
